@@ -9,12 +9,37 @@ workflows:
     scripts:
       - name: Regenerate platform folders (android/ios)
         script: flutter create --platforms=android,ios --org com.exonacademy .
+
       - name: Fix compileSdk version (file_picker requires 36+)
-        script: sed -i '' 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts
+        script: sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts
+
+      - name: Wire up release signing config
+        script: |
+          cat >> android/app/build.gradle.kts <<'EOF'
+
+          android {
+              signingConfigs {
+                  create("release") {
+                      keyAlias = System.getenv("CM_KEY_ALIAS")
+                      keyPassword = System.getenv("CM_KEY_PASSWORD")
+                      storeFile = System.getenv("CM_KEYSTORE_PATH")?.let { file(it) }
+                      storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
+                  }
+              }
+              buildTypes {
+                  getByName("release") {
+                      signingConfig = signingConfigs.getByName("release")
+                  }
+              }
+          }
+          EOF
+
       - name: Get Flutter packages
         script: flutter pub get
-      - name: Build APK (debug/test)
+
+      - name: Build APK (release, signed)
         script: flutter build apk --release
+
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
     publishing:
@@ -32,15 +57,22 @@ workflows:
     scripts:
       - name: Regenerate platform folders (android/ios)
         script: flutter create --platforms=android,ios --org com.exonacademy .
+
       - name: Fix compileSdk version (file_picker requires 36+)
-        script: sed -i '' 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts
+        script: sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts
+
       - name: Get Flutter packages
         script: flutter pub get
+
       - name: Install CocoaPods dependencies
         script: |
           cd ios && pod install
+
       - name: Build iOS (no codesign - for testing)
         script: flutter build ios --release --no-codesign
+
+    artifacts:
+      - build/ios/iphoneos/*.app
     publishing:
       email:
         recipients:
