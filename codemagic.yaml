@@ -10,12 +10,6 @@ workflows:
       - name: Regenerate platform folders (android/ios)
         script: flutter create --platforms=android,ios --org com.exonacademy .
 
-      - name: Get Flutter packages
-        script: flutter pub get
-
-      - name: Bump compileSdk to 36 globally (app + all plugins, e.g. file_picker)
-        script: echo "flutter.compileSdkVersion=36" >> android/local.properties
-
       - name: Wire up release signing config
         script: |
           cat >> android/app/build.gradle.kts <<'EOF'
@@ -36,6 +30,9 @@ workflows:
               }
           }
           EOF
+
+      - name: Get Flutter packages
+        script: flutter pub get
 
       - name: Build APK (release, signed)
         script: flutter build apk --release
@@ -60,9 +57,6 @@ workflows:
 
       - name: Get Flutter packages
         script: flutter pub get
-
-      - name: Bump compileSdk to 36 globally (app + all plugins, e.g. file_picker)
-        script: echo "flutter.compileSdkVersion=36" >> android/local.properties
 
       - name: Install CocoaPods dependencies
         script: |
