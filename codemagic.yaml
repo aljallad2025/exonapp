@@ -1,0 +1,47 @@
+workflows:
+  android-workflow:
+    name: Exon Student App - Android
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      android_signing:
+        - allowners_keystore
+    scripts:
+      - name: Regenerate platform folders (android/ios)
+        script: flutter create --platforms=android,ios --org com.exonacademy .
+      - name: Fix compileSdk version (file_picker requires 36+)
+        script: sed -i '' 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Build APK (debug/test)
+        script: flutter build apk --release
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+
+  ios-workflow:
+    name: Exon Student App - iOS
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Regenerate platform folders (android/ios)
+        script: flutter create --platforms=android,ios --org com.exonacademy .
+      - name: Fix compileSdk version (file_picker requires 36+)
+        script: sed -i '' 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios && pod install
+      - name: Build iOS (no codesign - for testing)
+        script: flutter build ios --release --no-codesign
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
