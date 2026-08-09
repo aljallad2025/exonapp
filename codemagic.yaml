@@ -11,7 +11,7 @@ workflows:
         script: flutter create --platforms=android,ios --org com.exonacademy .
 
       - name: Fix compileSdk version (file_picker requires 36+)
-        script: sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts
+        script: perl -pi -e 's/compileSdk = flutter\.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts
 
       - name: Wire up release signing config
         script: |
@@ -59,7 +59,7 @@ workflows:
         script: flutter create --platforms=android,ios --org com.exonacademy .
 
       - name: Fix compileSdk version (file_picker requires 36+)
-        script: sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts
+        script: perl -pi -e 's/compileSdk = flutter\.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts
 
       - name: Get Flutter packages
         script: flutter pub get
